@@ -1,7 +1,9 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gymapp/telas/autenticacao_tela.dart';
 import 'package:flutter_gymapp/telas/exercicio_tela.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_gymapp/telas/inicio_tela.dart';
 import 'firebase_options.dart';
 
 void main() async {
@@ -20,7 +22,25 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: AutenticacaoTela(),
+      home: RoteadorTela(),
+    );
+  }
+}
+
+class RoteadorTela extends StatelessWidget {
+  const RoteadorTela({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<User?>(
+      stream: FirebaseAuth.instance.userChanges(),
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          return const InicioTela();
+        } else {
+          return const AutenticacaoTela();
+        }
+      },
     );
   }
 }

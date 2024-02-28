@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gymapp/componentes/decoration_campo_autenticacao.dart';
+import 'package:flutter_gymapp/comum/snackbar.dart';
+import 'package:flutter_gymapp/servicos/autenticacao_servico.dart';
 import 'package:flutter_gymapp/telas/minhas_cores.dart';
 
 class AutenticacaoTela extends StatefulWidget {
@@ -12,6 +14,12 @@ class AutenticacaoTela extends StatefulWidget {
 class _AutenticacaoTelaState extends State<AutenticacaoTela> {
   bool queroEntrar = true;
   final _formKey = GlobalKey<FormState>();
+
+  final TextEditingController _emailControler = TextEditingController();
+  final TextEditingController _senhaControler = TextEditingController();
+  final TextEditingController _nomeControler = TextEditingController();
+
+  AutenticacaoServico _autenServico = AutenticacaoServico();
 
   @override
   Widget build(BuildContext context) {
@@ -41,6 +49,7 @@ class _AutenticacaoTelaState extends State<AutenticacaoTela> {
                     height: 24,
                   ),
                   TextFormField(
+                    controller: _emailControler,
                     decoration: getAuthenticationInputDecoration("E-mail"),
                     validator: (String? value) {
                       if (value == null) {
@@ -57,6 +66,7 @@ class _AutenticacaoTelaState extends State<AutenticacaoTela> {
                   ),
                   const SizedBox(height: 8),
                   TextFormField(
+                    controller: _senhaControler,
                     decoration: getAuthenticationInputDecoration("Senha"),
                     obscureText: true,
                     validator: (String? value) {
@@ -75,21 +85,7 @@ class _AutenticacaoTelaState extends State<AutenticacaoTela> {
                     child: Column(
                       children: [
                         TextFormField(
-                          decoration: getAuthenticationInputDecoration(
-                              "Confirme sua Senha"),
-                          obscureText: true,
-                          validator: (String? value) {
-                            if (value == null) {
-                              return "A confirmação de senha não pode ser vazia!";
-                            }
-                            if (value.length < 5) {
-                              return "A confirmação de senha não confere";
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 8),
-                        TextFormField(
+                          controller: _nomeControler,
                           decoration:
                               getAuthenticationInputDecoration("Nome completo"),
                           validator: (String? value) {
@@ -150,8 +146,34 @@ class _AutenticacaoTelaState extends State<AutenticacaoTela> {
   }
 
   botaoPrincipalClicado() {
+    String nome = _nomeControler.text;
+    String email = _emailControler.text;
+    String senha = _senhaControler.text;
+
     if (_formKey.currentState!.validate()) {
-      print("valido");
+      if (queroEntrar) {
+        print("Entrada validada");
+        _autenServico.logarUsuarios(email: email, senha: senha).then(
+          (String? erro) {
+            if (erro != null) {
+              mostrarSnackBar(context: context, texto: erro);
+            }
+          },
+        );
+      } else {
+        print("Cadastro validado");
+        print(
+            "${_emailControler.text}, ${_senhaControler.text}, ${_nomeControler.text},");
+        _autenServico
+            .cadastrarUsuario(nome: nome, senha: senha, email: email)
+            .then(
+          (String? erro) {
+            if (erro != null) {
+              mostrarSnackBar(context: context, texto: erro);
+            }
+          },
+        );
+      }
     } else {
       print("invalido");
     }
